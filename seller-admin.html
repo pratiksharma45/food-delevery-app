@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DilliBite Seller Dashboard — Delhi NCR Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFDF9;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F2EA;
+      --border: #E6DDD0;
+      --primary: #D9381E;
+      --primary-hover: #B32610;
+      --primary-soft: #FFEAE6;
+      --green: #15803D;
+      --green-soft: #DCFCE7;
+      --saffron: #D97706;
+      --saffron-soft: #FEF3C7;
+      --ink: #1B1714;
+      --muted: #574E47;
+      --danger: #B91C1C;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    h1, h2, h3, h4 { font-family: 'Outfit', system-ui, sans-serif; color: var(--ink); }
+
+    .container { max-width: 1180px; margin: 0 auto; padding: 20px; }
+
+    /* Header */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .topbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--primary); color: #fff;
+      display: grid; place-items: center;
+      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 20px;
+    }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-soft); color: var(--green);
+      font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px;
+    }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+    /* Cards & Buttons */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(27, 23, 20, 0.04);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 18px; border-radius: 12px; border: 1px solid transparent;
+      font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: var(--surface); color: var(--ink); border-color: var(--border); }
+    .btn-outline:hover { background: var(--surface-alt); }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-danger { background: #FEE2E2; color: var(--danger); border-color: #FCA5A5; }
+    .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 10px; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Form Controls */
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+    input, select, textarea {
+      width: 100%; padding: 11px 13px; border-radius: 11px;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--ink); font-family: inherit; font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--primary-soft); border-color: var(--primary);
+    }
+    textarea { resize: vertical; min-height: 76px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 760px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      background: var(--surface-alt); padding: 6px; border-radius: 14px;
+      border: 1px solid var(--border); margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1; min-width: 140px; padding: 10px 16px; border: none; border-radius: 10px;
+      background: transparent; color: var(--muted); font-weight: 700; font-size: 14px;
+      cursor: pointer; font-family: inherit;
+    }
+    .tab-btn.active {
+      background: var(--surface); color: var(--primary);
+      box-shadow: 0 2px 6px rgba(27, 23, 20, 0.08);
+    }
+
+    /* Auth Layout */
+    .auth-wrap {
+      max-width: 880px; margin: 28px auto;
+      display: grid; grid-template-columns: 1.05fr 1.25fr; gap: 20px; align-items: start;
+    }
+    @media (max-width: 840px) { .auth-wrap { grid-template-columns: 1fr; } }
+
+    .demo-box {
+      background: linear-gradient(135deg, #FFF5F2 0%, #FEF9EE 100%);
+      border: 1.5px solid #F7C7BA;
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .cred-row {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; margin: 12px 0;
+      font-size: 13px;
+    }
+    .cred-row code {
+      font-family: ui-monospace, monospace; font-weight: 700;
+      color: var(--primary); background: var(--primary-soft);
+      padding: 2px 6px; border-radius: 6px;
+    }
+
+    /* Dish Grid */
+    .dishes-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px;
+    }
+    .dish-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
+    }
+    .dish-img { width: 100%; height: 170px; object-fit: cover; background: var(--surface-alt); }
+    .dish-body { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+    .badge-veg { background: var(--green-soft); color: var(--green); }
+    .badge-nonveg { background: #FEE2E2; color: var(--danger); }
+    .badge-saffron { background: var(--saffron-soft); color: #92400E; }
+    .badge-primary { background: var(--primary-soft); color: var(--primary); }
+
+    /* Orders List */
+    .orders-list { display: flex; flex-direction: column; gap: 14px; }
+    .order-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(27, 23, 20, 0.55);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 20px; width: 100%; max-width: 680px;
+      max-height: 90vh; overflow-y: auto; padding: 24px; border: 1px solid var(--border);
+    }
+
+    .zone-checks {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 8px;
+      margin-top: 6px;
+    }
+    .zone-check {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      font-size: 13px; cursor: pointer; font-weight: 500;
+    }
+    .zone-check input { width: auto; }
+
+    .alert {
+      padding: 11px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px;
+    }
+    .alert-error { background: #FEE2E2; color: var(--danger); border: 1px solid #FCA5A5; }
+    .alert-success { background: var(--green-soft); color: var(--green); border: 1px solid #86EFAC; }
+    .alert-info { background: var(--saffron-soft); color: #92400E; border: 1px solid #FCD34D; }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-badge">D</div>
+      <div>
+        <h2 style="font-size: 19px; line-height: 1.15;">DilliBite Seller Dashboard</h2>
+        <p class="muted" style="font-size: 12px;">Delhi NCR Partner Portal • Synced with Customer Android App</p>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span class="live-pill"><span class="live-dot"></span> Firebase Connected (food-delivery-app-65da2)</span>
+      <div id="topbar-user-area" class="hidden" style="display: flex; align-items: center; gap: 10px;">
+        <span id="topbar-rest-name" style="font-weight: 700; font-size: 14px;"></span>
+        <button class="btn btn-outline btn-sm" id="btn-logout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div id="global-toast" class="alert hidden"></div>
+
+  <!-- Session Recovery Banner (visible if signed in via Auth but dashboard hasn't opened yet) -->
+  <div id="session-banner" class="alert alert-info hidden" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <span id="session-banner-text">Signed in session detected.</span>
+    <div style="display: flex; gap: 8px;">
+      <button type="button" class="btn btn-primary btn-sm" id="btn-retry-dashboard">Open Dashboard</button>
+      <button type="button" class="btn btn-outline btn-sm" id="btn-banner-logout">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- AUTH VIEW -->
+  <section id="auth-view" class="auth-wrap">
+    <div class="demo-box">
+      <span class="badge badge-primary" style="margin-bottom: 10px;">INSTANT DEMO ACCESS</span>
+      <h2 style="font-size: 22px; margin-bottom: 6px;">Test Live Seller Dashboard</h2>
+      <p class="muted" style="margin-bottom: 12px;">
+        Sign in with our pre-configured demo restaurant account below to inspect dishes for <strong>Karim's Royal Mughlai</strong> only, upload dish images, add new products, edit prices, and manage live COD orders synced to the Android app.
+      </p>
+      <div class="cred-row">
+        <div><strong>Restaurant:</strong> Karim's Royal Mughlai (Chandni Chowk &amp; CP)</div>
+        <div style="margin-top: 6px;"><strong>Demo Seller ID:</strong> <code>karim.seller@dillibite.in</code></div>
+        <div style="margin-top: 6px;"><strong>Demo Password:</strong> <code>Seller@123</code></div>
+      </div>
+      <button type="button" class="btn btn-primary" style="width: 100%;" id="btn-demo-seller-login">
+        One-Click Demo Seller Login (Karim's)
+      </button>
+      <p class="muted" style="font-size: 11.5px; margin-top: 10px;">
+        Automatically provisions the demo seller account &amp; seeds Karim's Royal Mughlai + 3 signature dishes into Firestore if not yet created.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="tabs" style="margin-bottom: 16px;">
+        <button type="button" class="tab-btn active" id="auth-tab-signin">Seller Sign In</button>
+        <button type="button" class="tab-btn" id="auth-tab-signup">Seller Sign Up</button>
+      </div>
+
+      <div id="auth-error" class="alert alert-error hidden"></div>
+
+      <!-- Sign In Form -->
+      <form id="form-signin" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label for="signin-email">Seller Email ID</label>
+          <input type="email" id="signin-email" placeholder="seller@restaurant.in" required />
+        </div>
+        <div>
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" placeholder="Minimum 6 characters" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-signin-submit">Sign In to Seller Dashboard</button>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="form-signup" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="grid-2">
+          <div>
+            <label for="signup-owner">Owner Full Name *</label>
+            <input type="text" id="signup-owner" placeholder="e.g. Rajesh Gupta" required />
+          </div>
+          <div>
+            <label for="signup-phone">Mobile Number (+91) *</label>
+            <input type="tel" id="signup-phone" placeholder="9811001122" minlength="10" maxlength="12" required />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="signup-email">Seller Email ID *</label>
+            <input type="email" id="signup-email" placeholder="owner@kitchen.in" required />
+          </div>
+          <div>
+            <label for="signup-password">Password (min 6 chars) *</label>
+            <input type="password" id="signup-password" minlength="6" required />
+          </div>
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 4px 0;" />
+        <div class="grid-2">
+          <div>
+            <label for="signup-rest-name">Restaurant Name *</label>
+            <input type="text" id="signup-rest-name" placeholder="e.g. Dilli Spice Kitchen" required />
+          </div>
+          <div>
+            <label for="signup-locality">Primary Delhi NCR Locality *</label>
+            <input type="text" id="signup-locality" placeholder="e.g. Lajpat Nagar / Noida Sec 18" required />
+          </div>
+        </div>
+        <div class="grid-3">
+          <div>
+            <label for="signup-cuisines">Cuisines (comma separated)</label>
+            <input type="text" id="signup-cuisines" value="Biryani, North Indian, Tandoor" />
+          </div>
+          <div>
+            <label for="signup-time">Delivery Time (mins)</label>
+            <input type="number" id="signup-time" value="28" min="10" max="90" />
+          </div>
+          <div>
+            <label for="signup-price-one">Price for One (₹)</label>
+            <input type="number" id="signup-price-one" value="250" min="50" max="3000" />
+          </div>
+        </div>
+        <div>
+          <label>Delhi NCR Zones You Deliver To *</label>
+          <div class="zone-checks" id="signup-zones"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-signup-submit">Create Seller Account &amp; Launch Store</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- DASHBOARD VIEW -->
+  <section id="dashboard-view" class="hidden">
+    <div class="grid-3" style="margin-bottom: 18px;">
+      <div class="card">
+        <p class="muted">Active Restaurant</p>
+        <h3 id="stat-rest-name" style="margin-top: 4px;">—</h3>
+        <p id="stat-rest-locality" class="muted" style="margin-top: 2px;">—</p>
+      </div>
+      <div class="card">
+        <p class="muted">Dishes Listed</p>
+        <h2 id="stat-dish-count" style="font-size: 30px; color: var(--primary); margin-top: 2px;">0</h2>
+        <p class="muted">Synced live with Android app</p>
+      </div>
+      <div class="card">
+        <p class="muted">Customer COD Orders</p>
+        <h2 id="stat-order-count" style="font-size: 30px; color: var(--green); margin-top: 2px;">0</h2>
+        <p class="muted">Real-time order updates</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="dishes">Dishes &amp; Menu</button>
+      <button type="button" class="tab-btn" data-tab="orders">Live Customer Orders</button>
+      <button type="button" class="tab-btn" data-tab="restaurant">Restaurant Details &amp; Cover</button>
+    </div>
+
+    <!-- TAB 1: DISHES -->
+    <div id="tab-dishes">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3>Your Restaurant Dishes</h3>
+          <p class="muted">Only dishes belonging to your restaurant are shown and editable here.</p>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-open-add-dish">+ Add New Dish</button>
+      </div>
+      <div id="dishes-grid" class="dishes-grid"></div>
+    </div>
+
+    <!-- TAB 2: ORDERS -->
+    <div id="tab-orders" class="hidden">
+      <div style="margin-bottom: 16px;">
+        <h3>Incoming Customer Orders (Cash on Delivery)</h3>
+        <p class="muted">Orders placed on the DilliBite Android app for your restaurant appear here instantly.</p>
+      </div>
+      <div id="orders-list" class="orders-list"></div>
+    </div>
+
+    <!-- TAB 3: RESTAURANT PROFILE -->
+    <div id="tab-restaurant" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom: 6px;">Update Restaurant Profile &amp; Images</h3>
+        <p class="muted" style="margin-bottom: 16px;">Changes save directly to Firestore and update the Android customer storefront in real time.</p>
+        <form id="form-edit-restaurant" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="grid-2">
+            <div>
+              <label for="rest-name">Restaurant Name</label>
+              <input type="text" id="rest-name" required />
+            </div>
+            <div>
+              <label for="rest-locality">Primary Locality</label>
+              <input type="text" id="rest-locality" required />
+            </div>
+          </div>
+          <div class="grid-3">
+            <div>
+              <label for="rest-subregion">Delhi NCR Sub-Region</label>
+              <input type="text" id="rest-subregion" required />
+            </div>
+            <div>
+              <label for="rest-cuisines">Cuisines (comma separated)</label>
+              <input type="text" id="rest-cuisines" required />
+            </div>
+            <div>
+              <label for="rest-offer">Offer Text (optional)</label>
+              <input type="text" id="rest-offer" placeholder="e.g. 20% OFF up to ₹120" />
+            </div>
+          </div>
+          <div class="grid-3">
+            <div>
+              <label for="rest-time">Delivery Time (mins)</label>
+              <input type="number" id="rest-time" min="5" max="120" required />
+            </div>
+            <div>
+              <label for="rest-fee">Delivery Fee (₹)</label>
+              <input type="number" id="rest-fee" min="0" max="500" required />
+            </div>
+            <div>
+              <label for="rest-price-one">Price for One (₹)</label>
+              <input type="number" id="rest-price-one" min="10" max="5000" required />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label for="rest-image-url">Restaurant Cover Image URL (or upload below)</label>
+              <input type="text" id="rest-image-url" placeholder="https://... or upload image file" />
+            </div>
+            <div>
+              <label for="rest-image-file">Upload Restaurant Image (auto-compressed)</label>
+              <input type="file" id="rest-image-file" accept="image/*" />
+            </div>
+          </div>
+          <img id="rest-image-preview" class="dish-img hidden" style="max-width: 360px; border-radius: 12px; border: 1px solid var(--border);" alt="Restaurant preview" />
+          <div style="display: flex; gap: 18px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+              <input type="checkbox" id="rest-pure-veg" style="width: auto;" /> Pure Veg Restaurant
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+              <input type="checkbox" id="rest-active" style="width: auto;" checked /> Store Open &amp; Accepting Orders
+            </label>
+          </div>
+          <div>
+            <label>Delhi NCR Delivery Zones</label>
+            <div class="zone-checks" id="edit-rest-zones"></div>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary" id="btn-save-restaurant">Save Restaurant Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ADD / EDIT DISH MODAL -->
+<div class="modal-backdrop" id="dish-modal-backdrop">
+  <div class="modal">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 id="dish-modal-title">Add New Dish</h3>
+      <button type="button" class="btn btn-outline btn-sm" id="btn-close-dish-modal">Close</button>
+    </div>
+    <form id="form-dish" style="display: flex; flex-direction: column; gap: 12px;">
+      <input type="hidden" id="dish-id" />
+      <div class="grid-2">
+        <div>
+          <label for="dish-name">Dish Name *</label>
+          <input type="text" id="dish-name" placeholder="e.g. Old Delhi Mutton Dum Biryani" required />
+        </div>
+        <div>
+          <label for="dish-category">Food Category *</label>
+          <select id="dish-category">
+            <option value="biryani">Biryani</option>
+            <option value="thali">Thali</option>
+            <option value="chaat">Chaat &amp; Snacks</option>
+            <option value="paneer">Paneer &amp; Curries</option>
+            <option value="tandoor">Tandoor &amp; Kebabs</option>
+            <option value="momos">Momos &amp; Chinese</option>
+            <option value="south_indian">South Indian</option>
+            <option value="rolls">Rolls &amp; Parathas</option>
+            <option value="sweets">Sweets &amp; Lassi</option>
+            <option value="combos">Family Combos</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div>
+          <label for="dish-price">Selling Price (₹) *</label>
+          <input type="number" id="dish-price" min="1" max="50000" required />
+        </div>
+        <div>
+          <label for="dish-mrp">Original Price / MRP (₹)</label>
+          <input type="number" id="dish-mrp" min="0" max="50000" placeholder="Optional" />
+        </div>
+        <div>
+          <label for="dish-prep">Prep Time (mins) *</label>
+          <input type="number" id="dish-prep" value="22" min="1" max="180" required />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <label for="dish-serves">Serves / Ideal For *</label>
+          <input type="text" id="dish-serves" value="Serves 1-2 people" required />
+        </div>
+        <div>
+          <label for="dish-spice">Spice Level *</label>
+          <input type="text" id="dish-spice" value="Medium Spicy" required />
+        </div>
+      </div>
+      <div>
+        <label for="dish-short-desc">Short Description (1 line) *</label>
+        <input type="text" id="dish-short-desc" maxlength="220" required />
+      </div>
+      <div>
+        <label for="dish-desc">Full Description *</label>
+        <textarea id="dish-desc" required></textarea>
+      </div>
+      <div>
+        <label for="dish-what-get">What Customer Will Get (one item per line) *</label>
+        <textarea id="dish-what-get" placeholder="1 Clay Handi Biryani (600g)&#10;Mint Raita (120ml)&#10;Onion Salad &amp; Lemon" required></textarea>
+      </div>
+      <div class="grid-2">
+        <div>
+          <label for="dish-image-url">Dish Image URL (or upload file)</label>
+          <input type="text" id="dish-image-url" placeholder="https://... or upload below" />
+        </div>
+        <div>
+          <label for="dish-image-file">Upload Dish Image (auto-compressed)</label>
+          <input type="file" id="dish-image-file" accept="image/*" />
+        </div>
+      </div>
+      <img id="dish-image-preview" class="dish-img hidden" style="max-width: 260px; border-radius: 12px; border: 1px solid var(--border);" alt="Dish preview" />
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <label style="display: flex; align-items: center; gap: 6px; margin: 0;">
+          <input type="checkbox" id="dish-veg" style="width: auto;" /> Pure Veg Dish
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; margin: 0;">
+          <input type="checkbox" id="dish-bestseller" style="width: auto;" /> Bestseller Tag
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; margin: 0;">
+          <input type="checkbox" id="dish-available" style="width: auto;" checked /> Available Now
+        </label>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+        <button type="button" class="btn btn-outline" id="btn-cancel-dish-modal">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-dish">Save Dish to Firestore</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Firebase Web Compat SDKs (work both on https://, http://localhost, and local file://) -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCwmpOJR99GtAh_fsqCGkk16u08DKFL5LI",
+    authDomain: "food-delivery-app-65da2.firebaseapp.com",
+    projectId: "food-delivery-app-65da2",
+    storageBucket: "food-delivery-app-65da2.firebasestorage.app",
+    messagingSenderId: "631373715945",
+    appId: "1:631373715945:android:38ec9f0373577e7b49d378"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const serverTimestamp = () => firebase.firestore.FieldValue.serverTimestamp();
+
+  const DEMO_EMAIL = "karim.seller@dillibite.in";
+  const DEMO_PW = "Seller@123";
+
+  const NCR_ZONES = [
+    { id: "cp", name: "Connaught Place (Central Delhi)" },
+    { id: "hauz_khas", name: "Hauz Khas & Saket (South Delhi)" },
+    { id: "rajouri", name: "Rajouri Garden (West Delhi)" },
+    { id: "chandni_chowk", name: "Chandni Chowk (Old Delhi)" },
+    { id: "noida_18", name: "Sector 18 & 62 (Noida)" },
+    { id: "cyberhub", name: "DLF CyberHub (Gurugram)" },
+    { id: "indirapuram", name: "Indirapuram (Ghaziabad)" },
+    { id: "dwarka", name: "Dwarka Sector 12" },
+    { id: "rohini", name: "Rohini Sector 7" },
+    { id: "laxmi_nagar", name: "Laxmi Nagar (East Delhi)" }
+  ];
+
+  let currentSellerProfile = null;
+  let currentRestaurant = null;
+  let currentDishes = [];
+  let isOnboarding = false;
+  let unsubDishes = null;
+  let unsubOrders = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function showToast(msg, isError = false) {
+    const el = $("global-toast");
+    el.textContent = msg;
+    el.className = `alert ${isError ? "alert-error" : "alert-success"}`;
+    el.classList.remove("hidden");
+    setTimeout(() => el.classList.add("hidden"), 5000);
+  }
+
+  function showAuthError(msg) {
+    const el = $("auth-error");
+    if (!msg) { el.classList.add("hidden"); return; }
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  function formatFirestoreError(err) {
+    const msg = err?.message || String(err);
+    if (err?.code === "permission-denied" || msg.toLowerCase().includes("missing or insufficient permissions")) {
+      return "Firestore permission denied. Please make sure the latest firestore.rules are published in Firebase Console -> Firestore Database -> Rules.";
+    }
+    return msg;
+  }
+
+  function renderZoneCheckboxes(containerId, selectedIds = ["cp"]) {
+    const root = $(containerId);
+    root.innerHTML = "";
+    NCR_ZONES.forEach((z) => {
+      const lbl = document.createElement("label");
+      lbl.className = "zone-check";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = z.id;
+      cb.checked = selectedIds.includes(z.id);
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(z.name));
+      root.appendChild(lbl);
+    });
+  }
+
+  function getCheckedZones(containerId) {
+    const checked = Array.from($(containerId).querySelectorAll("input:checked")).map((i) => i.value);
+    return checked.length ? checked : ["cp"];
+  }
+
+  function compressImageFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 640;
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.72));
+        };
+        img.onerror = reject;
+        img.src = ev.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function seedKarimsRestaurantAndDishes(uid, restId, email) {
+    await db.collection("restaurants").doc(restId).set({
+      sellerUid: uid,
+      name: "Karim's Royal Mughlai",
+      locality: "Jama Masjid & CP",
+      subRegion: "Central & Old Delhi",
+      deliveryZoneIds: ["cp", "chandni_chowk", "hauz_khas", "laxmi_nagar", "noida_18"],
+      cuisines: ["Biryani", "Mughlai", "Tandoor & Kebabs"],
+      rating: 4.6,
+      reviewCountText: "12.4K+",
+      deliveryTimeMins: 28,
+      deliveryFeeInr: 25,
+      priceForOneInr: 280,
+      isPureVeg: false,
+      offerText: "20% OFF up to ₹120",
+      isRecommended: true,
+      localImageKey: "img_food_biryani",
+      isActive: true,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    const dishPrefix = restId === "rest_karims" ? "dish_karim" : `dish_karim_${uid.slice(0, 6)}`;
+    const demoDishes = [
+      {
+        id: `${dishPrefix}_mutton_biryani`,
+        name: "Old Delhi Mutton Dum Biryani",
+        categoryId: "biryani",
+        priceInr: 389,
+        originalPriceInr: 449,
+        isVeg: false,
+        isBestseller: true,
+        spiceLevel: "Medium Spicy",
+        rating: 4.7,
+        ratingCount: 1840,
+        shortDescription: "Slow-cooked tender mutton & aged basmati rice sealed in clay handi.",
+        description: "Authentic Purani Dilli style slow-dum biryani layered with saffron milk, browned onions, fresh mint, and succulent goat pieces.",
+        whatYouWillGet: [
+          "1 Clay Handi Mutton Dum Biryani (600g)",
+          "Mint & Coriander Boondi Raita (120ml)",
+          "Rich Mirchi Ka Salan Gravy (100ml)",
+          "Lachha Pyaaz & Lemon Wedges"
+        ],
+        serves: "Serves 1–2 people",
+        prepTimeMins: 25,
+        localImageKey: "img_food_biryani"
+      },
+      {
+        id: `${dishPrefix}_chicken_biryani`,
+        name: "Nizami Chicken Tikka Biryani",
+        categoryId: "biryani",
+        priceInr: 319,
+        originalPriceInr: 369,
+        isVeg: false,
+        isBestseller: true,
+        spiceLevel: "Medium",
+        rating: 4.5,
+        ratingCount: 1320,
+        shortDescription: "Char-grilled chicken tikka folded into fragrant kesar basmati.",
+        description: "Tandoor-roasted boneless chicken tikka simmered in spiced yakhni and layered under long-grain basmati rice.",
+        whatYouWillGet: [
+          "1 Chicken Tikka Biryani Pack (550g)",
+          "Cool Cucumber Raita (120ml)",
+          "Roasted Garlic & Chilli Chutney (50ml)"
+        ],
+        serves: "Serves 1–2 people",
+        prepTimeMins: 22,
+        localImageKey: "img_food_biryani"
+      },
+      {
+        id: `${dishPrefix}_seekh`,
+        name: "Seekh Kebab & Roomali Combo",
+        categoryId: "tandoor",
+        priceInr: 295,
+        isVeg: false,
+        isBestseller: false,
+        spiceLevel: "Medium Spicy",
+        rating: 4.6,
+        ratingCount: 690,
+        shortDescription: "Juicy charcoal-grilled seekh kebabs paired with soft roomali rotis.",
+        description: "Hand-minced spiced seekh skewers grilled over live charcoal, served hot with paper-thin roomali rotis and green chutney.",
+        whatYouWillGet: [
+          "4 Charcoal Seekh Kebab Skewers",
+          "2 Soft Roomali Rotis",
+          "Dhaniya-Pudina Chutney (60ml)"
+        ],
+        serves: "Serves 1–2 people",
+        prepTimeMins: 20,
+        localImageKey: "img_hero_delhi_ncr"
+      }
+    ];
+
+    for (const d of demoDishes) {
+      const payload = {
+        restaurantId: restId,
+        sellerUid: uid,
+        name: d.name,
+        categoryId: d.categoryId,
+        priceInr: d.priceInr,
+        isVeg: d.isVeg,
+        isBestseller: d.isBestseller,
+        spiceLevel: d.spiceLevel,
+        rating: d.rating,
+        ratingCount: d.ratingCount,
+        shortDescription: d.shortDescription,
+        description: d.description,
+        whatYouWillGet: d.whatYouWillGet,
+        serves: d.serves,
+        prepTimeMins: d.prepTimeMins,
+        localImageKey: d.localImageKey,
+        isAvailable: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      if (d.originalPriceInr) payload.originalPriceInr = d.originalPriceInr;
+      await db.collection("dishes").doc(d.id).set(payload);
+    }
+
+    await db.collection("sellers").doc(uid).set({
+      uid,
+      ownerName: "Karim Demo Partner",
+      email: (email || DEMO_EMAIL).toLowerCase(),
+      phone: "9811009900",
+      restaurantId: restId,
+      restaurantName: "Karim's Royal Mughlai",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  async function ensureDemoKarimSeeded(user) {
+    const uid = user.uid;
+    const email = (user.email || DEMO_EMAIL).toLowerCase();
+
+    const sellerSnap = await db.collection("sellers").doc(uid).get();
+    if (sellerSnap.exists) {
+      const sData = sellerSnap.data();
+      const linkedRestSnap = await db.collection("restaurants").doc(sData.restaurantId).get();
+      if (!linkedRestSnap.exists) {
+        await seedKarimsRestaurantAndDishes(uid, sData.restaurantId, email);
+      }
+      return;
+    }
+
+    const preferredRestSnap = await db.collection("restaurants").doc("rest_karims").get();
+    const restId = (!preferredRestSnap.exists || preferredRestSnap.data()?.sellerUid === uid)
+      ? "rest_karims"
+      : `rest_karims_${uid.slice(0, 8)}`;
+
+    const targetRestSnap = restId === "rest_karims"
+      ? preferredRestSnap
+      : await db.collection("restaurants").doc(restId).get();
+
+    if (!targetRestSnap.exists) {
+      await seedKarimsRestaurantAndDishes(uid, restId, email);
+    } else {
+      await db.collection("sellers").doc(uid).set({
+        uid,
+        ownerName: "Karim Demo Partner",
+        email,
+        phone: "9811009900",
+        restaurantId: restId,
+        restaurantName: targetRestSnap.data()?.name || "Karim's Royal Mughlai",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
+  }
+
+  renderZoneCheckboxes("signup-zones", ["cp", "chandni_chowk", "hauz_khas"]);
+
+  // Auth Tabs
+  $("auth-tab-signin").addEventListener("click", () => {
+    $("auth-tab-signin").classList.add("active");
+    $("auth-tab-signup").classList.remove("active");
+    $("form-signin").classList.remove("hidden");
+    $("form-signup").classList.add("hidden");
+    showAuthError(null);
+  });
+  $("auth-tab-signup").addEventListener("click", () => {
+    $("auth-tab-signup").classList.add("active");
+    $("auth-tab-signin").classList.remove("active");
+    $("form-signup").classList.remove("hidden");
+    $("form-signin").classList.add("hidden");
+    showAuthError(null);
+  });
+
+  // Dashboard Tabs
+  document.querySelectorAll("[data-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = btn.getAttribute("data-tab");
+      ["dishes", "orders", "restaurant"].forEach((t) => {
+        $(`tab-${t}`).classList.toggle("hidden", t !== target);
+      });
+    });
+  });
+
+  async function runDemoSellerFlow(btn, originalLabel) {
+    showAuthError(null);
+    btn.disabled = true;
+    btn.textContent = "Connecting Demo Seller…";
+    try {
+      isOnboarding = true;
+      let cred;
+      try {
+        cred = await auth.signInWithEmailAndPassword(DEMO_EMAIL, DEMO_PW);
+      } catch (signInErr) {
+        try {
+          cred = await auth.createUserWithEmailAndPassword(DEMO_EMAIL, DEMO_PW);
+        } catch (createErr) {
+          throw signInErr;
+        }
+      }
+      await ensureDemoKarimSeeded(cred.user);
+      isOnboarding = false;
+      await loadSellerDashboard(cred.user);
+      showToast("Signed in as Demo Seller: Karim's Royal Mughlai!");
+    } catch (err) {
+      isOnboarding = false;
+      showAuthError(formatFirestoreError(err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }
+
+  // Sign In Form
+  $("form-signin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showAuthError(null);
+    const email = $("signin-email").value.trim();
+    const password = $("signin-password").value;
+    const btn = $("btn-signin-submit");
+
+    if (email.toLowerCase() === DEMO_EMAIL && password === DEMO_PW) {
+      await runDemoSellerFlow(btn, "Sign In to Seller Dashboard");
+      return;
+    }
+
+    btn.disabled = true;
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      await loadSellerDashboard(cred.user);
+    } catch (err) {
+      showAuthError(formatFirestoreError(err));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Sign Up Seller
+  $("form-signup").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showAuthError(null);
+    const btn = $("btn-signup-submit");
+    btn.disabled = true;
+    try {
+      const ownerName = $("signup-owner").value.trim();
+      const phone = $("signup-phone").value.replace(/\D/g, "");
+      const email = $("signup-email").value.trim().toLowerCase();
+      const password = $("signup-password").value;
+      const restName = $("signup-rest-name").value.trim();
+      const locality = $("signup-locality").value.trim();
+      const cuisines = $("signup-cuisines").value.split(",").map((s) => s.trim()).filter(Boolean);
+      const deliveryTimeMins = parseInt($("signup-time").value, 10) || 28;
+      const priceForOneInr = parseInt($("signup-price-one").value, 10) || 250;
+      const deliveryZoneIds = getCheckedZones("signup-zones");
+
+      isOnboarding = true;
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      const uid = cred.user.uid;
+      const restId = `rest_${uid.slice(0, 12)}`;
+
+      await db.collection("restaurants").doc(restId).set({
+        sellerUid: uid,
+        name: restName,
+        locality,
+        subRegion: "Delhi NCR",
+        deliveryZoneIds,
+        cuisines: cuisines.length ? cuisines : ["North Indian"],
+        rating: 4.5,
+        reviewCountText: "New",
+        deliveryTimeMins,
+        deliveryFeeInr: 20,
+        priceForOneInr,
+        isPureVeg: false,
+        offerText: "20% OFF Welcome Offer",
+        isRecommended: true,
+        localImageKey: "img_hero_delhi_ncr",
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      await db.collection("sellers").doc(uid).set({
+        uid,
+        ownerName,
+        email,
+        phone,
+        restaurantId: restId,
+        restaurantName: restName,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      isOnboarding = false;
+      await loadSellerDashboard(cred.user);
+      showToast("Seller account & restaurant created in Firestore!");
+    } catch (err) {
+      isOnboarding = false;
+      showAuthError(formatFirestoreError(err));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // One-Click Demo Seller Login (Karim's Royal Mughlai)
+  $("btn-demo-seller-login").addEventListener("click", () => {
+    runDemoSellerFlow($("btn-demo-seller-login"), "One-Click Demo Seller Login (Karim's)");
+  });
+
+  async function handleSignOut() {
+    if (unsubDishes) { unsubDishes(); unsubDishes = null; }
+    if (unsubOrders) { unsubOrders(); unsubOrders = null; }
+    await auth.signOut();
+  }
+
+  $("btn-logout").addEventListener("click", handleSignOut);
+  $("btn-banner-logout").addEventListener("click", handleSignOut);
+  $("btn-retry-dashboard").addEventListener("click", async () => {
+    if (auth.currentUser) {
+      await loadSellerDashboard(auth.currentUser);
+    }
+  });
+
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      if (!isOnboarding) {
+        await loadSellerDashboard(user);
+      }
+    } else {
+      currentSellerProfile = null;
+      currentRestaurant = null;
+      currentDishes = [];
+      $("auth-view").classList.remove("hidden");
+      $("dashboard-view").classList.add("hidden");
+      $("topbar-user-area").classList.add("hidden");
+      $("session-banner").classList.add("hidden");
+    }
+  });
+
+  async function loadSellerDashboard(user) {
+    const uid = user.uid;
+    const userEmail = (user.email || "").toLowerCase();
+    try {
+      showAuthError(null);
+      if (userEmail === DEMO_EMAIL) {
+        await ensureDemoKarimSeeded(user);
+      }
+
+      const sellerSnap = await db.collection("sellers").doc(uid).get();
+      if (!sellerSnap.exists) {
+        $("session-banner-text").textContent = `Signed in as ${user.email || uid} (Customer account — no seller store linked yet).`;
+        $("session-banner").classList.remove("hidden");
+        showAuthError("This account is registered as a customer, not a seller. Please sign out and use Seller Sign Up or the One-Click Demo Seller login.");
+        return;
+      }
+
+      currentSellerProfile = sellerSnap.data();
+      const restSnap = await db.collection("restaurants").doc(currentSellerProfile.restaurantId).get();
+      if (restSnap.exists) {
+        currentRestaurant = { id: restSnap.id, ...restSnap.data() };
+      } else {
+        throw new Error(`Restaurant document (${currentSellerProfile.restaurantId}) not found in Firestore.`);
+      }
+
+      $("session-banner").classList.add("hidden");
+      $("auth-view").classList.add("hidden");
+      $("dashboard-view").classList.remove("hidden");
+      $("topbar-user-area").classList.remove("hidden");
+
+      populateRestaurantForm();
+      subscribeDishes(uid);
+      subscribeOrders(uid);
+    } catch (err) {
+      const friendly = formatFirestoreError(err);
+      $("session-banner-text").textContent = `Signed in as ${user.email || uid}, waiting for Firestore dashboard access.`;
+      $("session-banner").classList.remove("hidden");
+      showAuthError(friendly);
+      showToast(friendly, true);
+    }
+  }
+
+  function populateRestaurantForm() {
+    if (!currentRestaurant) return;
+    $("topbar-rest-name").textContent = currentRestaurant.name;
+    $("stat-rest-name").textContent = currentRestaurant.name;
+    $("stat-rest-locality").textContent = `${currentRestaurant.locality} • ${currentRestaurant.subRegion}`;
+
+    $("rest-name").value = currentRestaurant.name || "";
+    $("rest-locality").value = currentRestaurant.locality || "";
+    $("rest-subregion").value = currentRestaurant.subRegion || "Delhi NCR";
+    $("rest-cuisines").value = (currentRestaurant.cuisines || []).join(", ");
+    $("rest-offer").value = currentRestaurant.offerText || "";
+    $("rest-time").value = currentRestaurant.deliveryTimeMins || 28;
+    $("rest-fee").value = currentRestaurant.deliveryFeeInr ?? 25;
+    $("rest-price-one").value = currentRestaurant.priceForOneInr || 250;
+    $("rest-image-url").value = currentRestaurant.imageUrl || "";
+    $("rest-pure-veg").checked = !!currentRestaurant.isPureVeg;
+    $("rest-active").checked = currentRestaurant.isActive !== false;
+
+    if (currentRestaurant.imageUrl) {
+      $("rest-image-preview").src = currentRestaurant.imageUrl;
+      $("rest-image-preview").classList.remove("hidden");
+    } else {
+      $("rest-image-preview").classList.add("hidden");
+    }
+    renderZoneCheckboxes("edit-rest-zones", currentRestaurant.deliveryZoneIds || ["cp"]);
+  }
+
+  $("rest-image-file").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await compressImageFile(file);
+    $("rest-image-url").value = dataUrl;
+    $("rest-image-preview").src = dataUrl;
+    $("rest-image-preview").classList.remove("hidden");
+  });
+
+  $("rest-image-url").addEventListener("input", (e) => {
+    const val = e.target.value.trim();
+    if (val) {
+      $("rest-image-preview").src = val;
+      $("rest-image-preview").classList.remove("hidden");
+    } else {
+      $("rest-image-preview").classList.add("hidden");
+    }
+  });
+
+  $("form-edit-restaurant").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentRestaurant) return;
+    const btn = $("btn-save-restaurant");
+    btn.disabled = true;
+    try {
+      const cuisinesList = $("rest-cuisines").value.split(",").map((s) => s.trim()).filter(Boolean);
+      const updatePayload = {
+        name: $("rest-name").value.trim(),
+        locality: $("rest-locality").value.trim(),
+        subRegion: $("rest-subregion").value.trim(),
+        cuisines: cuisinesList.length ? cuisinesList : ["North Indian"],
+        offerText: $("rest-offer").value.trim() || null,
+        deliveryTimeMins: parseInt($("rest-time").value, 10) || 28,
+        deliveryFeeInr: parseInt($("rest-fee").value, 10) || 0,
+        priceForOneInr: parseInt($("rest-price-one").value, 10) || 250,
+        imageUrl: $("rest-image-url").value.trim() || null,
+        isPureVeg: $("rest-pure-veg").checked,
+        isActive: $("rest-active").checked,
+        deliveryZoneIds: getCheckedZones("edit-rest-zones"),
+        updatedAt: serverTimestamp()
+      };
+      await db.collection("restaurants").doc(currentRestaurant.id).update(updatePayload);
+      currentRestaurant = { ...currentRestaurant, ...updatePayload };
+      populateRestaurantForm();
+      showToast("Restaurant details synced to Firestore & Android App!");
+    } catch (err) {
+      showToast(formatFirestoreError(err), true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function subscribeDishes(uid) {
+    if (unsubDishes) unsubDishes();
+    unsubDishes = db.collection("dishes")
+      .where("sellerUid", "==", uid)
+      .onSnapshot(
+        (snapshot) => {
+          const dishes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+          currentDishes = dishes;
+          $("stat-dish-count").textContent = dishes.length;
+          renderDishes(dishes);
+        },
+        (err) => showToast(formatFirestoreError(err), true)
+      );
+  }
+
+  function renderDishes(dishes) {
+    const grid = $("dishes-grid");
+    grid.innerHTML = "";
+    if (!dishes.length) {
+      grid.innerHTML = `<div class="card"><p class="muted">No dishes yet. Click "+ Add New Dish" to publish your first item!</p></div>`;
+      return;
+    }
+    dishes.forEach((dish) => {
+      const card = document.createElement("div");
+      card.className = "dish-card";
+      const imgSrc = dish.imageUrl || "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=70";
+      card.innerHTML = `
+        <img class="dish-img" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(dish.name)}" />
+        <div class="dish-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="badge ${dish.isVeg ? "badge-veg" : "badge-nonveg"}">${dish.isVeg ? "PURE VEG" : "NON-VEG"}</span>
+            <span class="badge badge-saffron">${escapeHtml(dish.categoryId).toUpperCase()}</span>
+            ${dish.isBestseller ? '<span class="badge badge-primary">BESTSELLER</span>' : ''}
+            ${dish.isAvailable === false ? '<span class="badge badge-nonveg">OUT OF STOCK</span>' : ''}
+          </div>
+          <h4>${escapeHtml(dish.name)}</h4>
+          <div style="font-weight:800; font-size:17px;">₹${Number(dish.priceInr)} ${dish.originalPriceInr ? `<span style="text-decoration:line-through; color:var(--muted); font-size:13px; font-weight:500;">₹${Number(dish.originalPriceInr)}</span>` : ""}</div>
+          <p class="muted">${escapeHtml(dish.serves)} • ${escapeHtml(dish.spiceLevel)}</p>
+          <p style="font-size:13px; color:var(--muted);">${escapeHtml(dish.shortDescription)}</p>
+          <div style="display:flex; gap:8px; margin-top:auto; padding-top:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline btn-sm" style="flex:1;" data-edit-dish="${escapeHtml(dish.id)}">Edit</button>
+            <button type="button" class="btn btn-outline btn-sm" data-toggle-dish="${escapeHtml(dish.id)}">${dish.isAvailable === false ? "Mark Available" : "Out of Stock"}</button>
+            <button type="button" class="btn btn-danger btn-sm" data-delete-dish="${escapeHtml(dish.id)}">Delete</button>
+          </div>
+        </div>
+      `;
+      card.querySelector(`[data-edit-dish]`).addEventListener("click", () => openDishModal(dish));
+      card.querySelector(`[data-toggle-dish]`).addEventListener("click", async () => {
+        try {
+          await db.collection("dishes").doc(dish.id).update({
+            isAvailable: dish.isAvailable === false,
+            updatedAt: serverTimestamp()
+          });
+          showToast(`${dish.name} marked as ${dish.isAvailable === false ? "Available" : "Out of Stock"}.`);
+        } catch (err) {
+          showToast(formatFirestoreError(err), true);
+        }
+      });
+      card.querySelector(`[data-delete-dish]`).addEventListener("click", async () => {
+        if (confirm(`Delete "${dish.name}" from menu?`)) {
+          try {
+            await db.collection("dishes").doc(dish.id).delete();
+            showToast("Dish deleted from Firestore.");
+          } catch (err) {
+            showToast(formatFirestoreError(err), true);
+          }
+        }
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function openDishModal(dish = null) {
+    $("dish-modal-title").textContent = dish ? "Edit Dish" : "Add New Dish";
+    $("dish-id").value = dish?.id || "";
+    $("dish-name").value = dish?.name || "";
+    $("dish-category").value = dish?.categoryId || "biryani";
+    $("dish-price").value = dish?.priceInr || "";
+    $("dish-mrp").value = dish?.originalPriceInr || "";
+    $("dish-prep").value = dish?.prepTimeMins || 22;
+    $("dish-serves").value = dish?.serves || "Serves 1-2 people";
+    $("dish-spice").value = dish?.spiceLevel || "Medium Spicy";
+    $("dish-short-desc").value = dish?.shortDescription || "";
+    $("dish-desc").value = dish?.description || "";
+    $("dish-what-get").value = (dish?.whatYouWillGet || []).join("\n");
+    $("dish-image-url").value = dish?.imageUrl || "";
+    $("dish-veg").checked = !!dish?.isVeg;
+    $("dish-bestseller").checked = !!dish?.isBestseller;
+    $("dish-available").checked = dish ? dish.isAvailable !== false : true;
+    $("dish-image-file").value = "";
+    if (dish?.imageUrl) {
+      $("dish-image-preview").src = dish.imageUrl;
+      $("dish-image-preview").classList.remove("hidden");
+    } else {
+      $("dish-image-preview").classList.add("hidden");
+    }
+    $("dish-modal-backdrop").classList.add("open");
+  }
+
+  $("btn-open-add-dish").addEventListener("click", () => openDishModal(null));
+  $("btn-close-dish-modal").addEventListener("click", () => $("dish-modal-backdrop").classList.remove("open"));
+  $("btn-cancel-dish-modal").addEventListener("click", () => $("dish-modal-backdrop").classList.remove("open"));
+
+  $("dish-image-file").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await compressImageFile(file);
+    $("dish-image-url").value = dataUrl;
+    $("dish-image-preview").src = dataUrl;
+    $("dish-image-preview").classList.remove("hidden");
+  });
+
+  $("dish-image-url").addEventListener("input", (e) => {
+    const val = e.target.value.trim();
+    if (val) {
+      $("dish-image-preview").src = val;
+      $("dish-image-preview").classList.remove("hidden");
+    } else {
+      $("dish-image-preview").classList.add("hidden");
+    }
+  });
+
+  $("form-dish").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentRestaurant || !auth.currentUser) return;
+    const btn = $("btn-save-dish");
+    btn.disabled = true;
+    try {
+      const existingId = $("dish-id").value.trim();
+      const dishId = existingId || `dish_${Date.now()}`;
+      const existingDish = existingId ? currentDishes.find((d) => d.id === existingId) : null;
+      const mrpVal = parseInt($("dish-mrp").value, 10);
+      const whatGet = $("dish-what-get").value.split(/\n|,/).map((s) => s.trim()).filter(Boolean);
+      const baseFields = {
+        name: $("dish-name").value.trim(),
+        categoryId: $("dish-category").value,
+        priceInr: parseInt($("dish-price").value, 10),
+        originalPriceInr: !isNaN(mrpVal) && mrpVal > 0 ? mrpVal : null,
+        isVeg: $("dish-veg").checked,
+        isBestseller: $("dish-bestseller").checked,
+        spiceLevel: $("dish-spice").value.trim(),
+        rating: existingDish?.rating ?? 4.6,
+        ratingCount: existingDish?.ratingCount ?? 120,
+        shortDescription: $("dish-short-desc").value.trim(),
+        description: $("dish-desc").value.trim(),
+        whatYouWillGet: whatGet.length ? whatGet : ["1 Regular Portion"],
+        serves: $("dish-serves").value.trim(),
+        prepTimeMins: parseInt($("dish-prep").value, 10) || 20,
+        imageUrl: $("dish-image-url").value.trim() || null,
+        localImageKey: existingDish?.localImageKey || "img_food_biryani",
+        isAvailable: $("dish-available").checked,
+        updatedAt: serverTimestamp()
+      };
+
+      if (existingId) {
+        await db.collection("dishes").doc(dishId).update(baseFields);
+        showToast("Dish updated & synced to Android app!");
+      } else {
+        await db.collection("dishes").doc(dishId).set({
+          ...baseFields,
+          restaurantId: currentRestaurant.id,
+          sellerUid: auth.currentUser.uid,
+          createdAt: serverTimestamp()
+        });
+        showToast("New dish published & synced to Android app!");
+      }
+      $("dish-modal-backdrop").classList.remove("open");
+    } catch (err) {
+      showToast(formatFirestoreError(err), true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function subscribeOrders(uid) {
+    if (unsubOrders) unsubOrders();
+    unsubOrders = db.collection("orders")
+      .where("sellerUid", "==", uid)
+      .onSnapshot(
+        (snapshot) => {
+          const orders = snapshot.docs
+            .map((d) => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+          $("stat-order-count").textContent = orders.length;
+          renderOrders(orders);
+        },
+        (err) => showToast(formatFirestoreError(err), true)
+      );
+  }
+
+  function renderOrders(orders) {
+    const list = $("orders-list");
+    list.innerHTML = "";
+    if (!orders.length) {
+      list.innerHTML = `<div class="card"><p class="muted">No customer orders yet. Open the Android app, order a dish from ${escapeHtml(currentRestaurant?.name || "your restaurant")} via Cash on Delivery, and watch it appear here live!</p></div>`;
+      return;
+    }
+    orders.forEach((order) => {
+      const addr = order.deliveryAddress || {};
+      const itemsHtml = (order.items || [])
+        .map((it) => `<li>${Number(it.quantity)}x <strong>${escapeHtml(it.dishName)}</strong> — ₹${Number(it.priceInr) * Number(it.quantity)}</li>`)
+        .join("");
+      const isTerminal = order.status === "DELIVERED" || order.status === "CANCELLED";
+      const card = document.createElement("div");
+      card.className = "order-card";
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div>
+            <span class="badge ${order.status === "DELIVERED" ? "badge-veg" : order.status === "CANCELLED" ? "badge-nonveg" : "badge-saffron"}">${escapeHtml(order.status).replace(/_/g, " ")}</span>
+            <h4 style="margin-top:6px;">Order #${escapeHtml(order.id)} • ₹${Number(order.grandTotalInr)} (${escapeHtml(order.paymentMethod)})</h4>
+            <p class="muted">Customer: <strong>${escapeHtml(addr.fullName || "Customer")}</strong> • +91 ${escapeHtml(addr.phone || "")}</p>
+            <p class="muted">Address: ${escapeHtml(addr.houseFlat || "")}, ${escapeHtml(addr.streetColony || "")}, ${escapeHtml(addr.locality || "")} ${addr.landmark ? `(Near ${escapeHtml(addr.landmark)})` : ""} - ${escapeHtml(addr.pinCode || "")}</p>
+            ${addr.instructions ? `<p class="muted">Note: ${escapeHtml(addr.instructions)}</p>` : ""}
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            ${!isTerminal ? `
+              <button type="button" class="btn btn-outline btn-sm" data-status="PREPARING">Mark Preparing</button>
+              <button type="button" class="btn btn-outline btn-sm" data-status="OUT_FOR_DELIVERY">Out for Delivery</button>
+              <button type="button" class="btn btn-green btn-sm" data-status="DELIVERED">Mark Delivered</button>
+              <button type="button" class="btn btn-danger btn-sm" data-status="CANCELLED">Cancel</button>
+            ` : ""}
+          </div>
+        </div>
+        <ul style="margin-top:12px; padding-left:20px; font-size:14px;">${itemsHtml}</ul>
+      `;
+      card.querySelectorAll("[data-status]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const newStatus = btn.getAttribute("data-status");
+          try {
+            await db.collection("orders").doc(order.id).update({
+              status: newStatus,
+              etaText: newStatus === "OUT_FOR_DELIVERY" ? "Arriving in 10 mins" : order.etaText,
+              updatedAt: serverTimestamp()
+            });
+            showToast(`Order #${order.id} updated to ${newStatus}`);
+          } catch (err) {
+            showToast(formatFirestoreError(err), true);
+          }
+        });
+      });
+      list.appendChild(card);
+    });
+  }
+</script>
+</body>
+</html>

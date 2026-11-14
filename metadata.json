@@ -1,0 +1,6 @@
+{
+  "name": "DilliBite",
+  "description": "Hyperlocal Indian food delivery app for Delhi NCR — browse local restaurants, explore food categories, view detailed dish portions, and order via Cash on Delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

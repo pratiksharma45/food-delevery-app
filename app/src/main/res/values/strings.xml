@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DilliBite</string>
+    <string name="delivering_to">DELIVERING TO</string>
+    <string name="search_placeholder">Search biryani, thali, chaat, or restaurants…</string>
+    <string name="hero_badge">DELHI NCR SPECIAL</string>
+    <string name="hero_title">Hot, Fresh &amp; Authentic\nAcross Delhi NCR</string>
+    <string name="hero_subtitle">From Old Delhi Biryani to Gurugram CyberHub Bowls</string>
+    <string name="whats_on_your_mind">What\'s on your mind?</string>
+    <string name="recommended_for_you">Recommended in %1$s</string>
+    <string name="all_restaurants_count">%1$d restaurants delivering to you</string>
+    <string name="pure_veg">Pure Veg</string>
+    <string name="rating_4_plus">Rating 4.0+</string>
+    <string name="under_30_mins">Under 30 mins</string>
+    <string name="pocket_friendly">Under ₹250</string>
+    <string name="bestseller">Bestseller</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="buy_now">Buy Now</string>
+    <string name="what_you_will_get">What you will get</string>
+    <string name="serves_label">Ideal for</string>
+    <string name="description_label">About this dish</string>
+    <string name="checkout_title">Delivery &amp; Cash on Delivery</string>
+    <string name="cod_title">Cash on Delivery (COD)</string>
+    <string name="cod_subtitle">Pay via cash or UPI QR to our delivery partner at your doorstep</string>
+    <string name="place_cod_order">Place Order • Cash on Delivery</string>
+    <string name="order_confirmed_title">Order Confirmed!</string>
+    <string name="profile_title">My Profile</string>
+    <string name="sign_in_tab">Sign In</string>
+    <string name="sign_up_tab">Sign Up</string>
+</resources>

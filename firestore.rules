@@ -1,0 +1,330 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Core Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    function isValidImageUrl(url) {
+      return url is string && url.size() <= 350000;
+    }
+
+    function isValidAddress(addr) {
+      return addr is map &&
+        addr.keys().hasAll(['fullName', 'phone', 'houseFlat', 'streetColony', 'locality', 'pinCode']) &&
+        addr.keys().hasOnly(['fullName', 'phone', 'houseFlat', 'streetColony', 'locality', 'landmark', 'pinCode', 'instructions']) &&
+        addr.fullName is string && addr.fullName.size() >= 1 && addr.fullName.size() <= 100 &&
+        addr.phone is string && addr.phone.size() >= 10 && addr.phone.size() <= 15 &&
+        addr.houseFlat is string && addr.houseFlat.size() >= 1 && addr.houseFlat.size() <= 120 &&
+        addr.streetColony is string && addr.streetColony.size() >= 1 && addr.streetColony.size() <= 150 &&
+        addr.locality is string && addr.locality.size() >= 1 && addr.locality.size() <= 100 &&
+        (!('landmark' in addr) || addr.landmark == null || (addr.landmark is string && addr.landmark.size() <= 120)) &&
+        addr.pinCode is string && addr.pinCode.size() >= 6 && addr.pinCode.size() <= 10 &&
+        (!('instructions' in addr) || addr.instructions == null || (addr.instructions is string && addr.instructions.size() <= 240));
+    }
+
+    // --- Validation Helpers ---
+    function isValidRestaurant(data) {
+      return data.sellerUid is string && data.sellerUid.size() >= 1 && data.sellerUid.size() <= 128 &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+        data.locality is string && data.locality.size() >= 2 && data.locality.size() <= 100 &&
+        data.subRegion is string && data.subRegion.size() >= 2 && data.subRegion.size() <= 100 &&
+        data.deliveryZoneIds is list && data.deliveryZoneIds.size() >= 1 && data.deliveryZoneIds.size() <= 20 &&
+        data.deliveryZoneIds[0] is string &&
+        data.cuisines is list && data.cuisines.size() >= 1 && data.cuisines.size() <= 15 &&
+        data.cuisines[0] is string &&
+        data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+        data.reviewCountText is string && data.reviewCountText.size() >= 1 && data.reviewCountText.size() <= 30 &&
+        data.deliveryTimeMins is int && data.deliveryTimeMins >= 5 && data.deliveryTimeMins <= 120 &&
+        data.deliveryFeeInr is int && data.deliveryFeeInr >= 0 && data.deliveryFeeInr <= 500 &&
+        data.priceForOneInr is int && data.priceForOneInr >= 10 && data.priceForOneInr <= 5000 &&
+        data.isPureVeg is bool &&
+        (!('offerText' in data) || data.offerText == null || (data.offerText is string && data.offerText.size() <= 100)) &&
+        data.isRecommended is bool &&
+        (!('imageUrl' in data) || data.imageUrl == null || isValidImageUrl(data.imageUrl)) &&
+        (!('localImageKey' in data) || data.localImageKey == null || (data.localImageKey is string && data.localImageKey.size() <= 60)) &&
+        data.isActive is bool;
+    }
+
+    function isValidDish(data) {
+      return data.restaurantId is string && isValidId(data.restaurantId) &&
+        data.sellerUid is string && data.sellerUid.size() >= 1 && data.sellerUid.size() <= 128 &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.categoryId is string && data.categoryId.size() >= 1 && data.categoryId.size() <= 50 &&
+        data.priceInr is int && data.priceInr >= 1 && data.priceInr <= 50000 &&
+        (!('originalPriceInr' in data) || data.originalPriceInr == null || (data.originalPriceInr is int && data.originalPriceInr >= 0 && data.originalPriceInr <= 50000)) &&
+        data.isVeg is bool &&
+        data.isBestseller is bool &&
+        data.spiceLevel is string && data.spiceLevel.size() >= 1 && data.spiceLevel.size() <= 40 &&
+        data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+        data.ratingCount is int && data.ratingCount >= 0 && data.ratingCount <= 1000000 &&
+        data.shortDescription is string && data.shortDescription.size() >= 1 && data.shortDescription.size() <= 240 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 1000 &&
+        data.whatYouWillGet is list && data.whatYouWillGet.size() >= 1 && data.whatYouWillGet.size() <= 20 &&
+        data.whatYouWillGet[0] is string &&
+        data.serves is string && data.serves.size() >= 1 && data.serves.size() <= 60 &&
+        data.prepTimeMins is int && data.prepTimeMins >= 1 && data.prepTimeMins <= 180 &&
+        (!('imageUrl' in data) || data.imageUrl == null || isValidImageUrl(data.imageUrl)) &&
+        (!('localImageKey' in data) || data.localImageKey == null || (data.localImageKey is string && data.localImageKey.size() <= 60)) &&
+        data.isAvailable is bool;
+    }
+
+    function isValidCustomerProfile(data) {
+      return data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 100 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+        data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 15 &&
+        isValidAddress(data.address);
+    }
+
+    function isValidSellerProfile(data) {
+      return data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.ownerName is string && data.ownerName.size() >= 2 && data.ownerName.size() <= 100 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+        data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 15 &&
+        data.restaurantId is string && isValidId(data.restaurantId) &&
+        data.restaurantName is string && data.restaurantName.size() >= 2 && data.restaurantName.size() <= 100;
+    }
+
+    function isValidOrderStatus(status) {
+      return status in ['PLACED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+    }
+
+    function isValidOrder(data) {
+      return data.customerUid is string && data.customerUid.size() >= 1 && data.customerUid.size() <= 128 &&
+        data.restaurantId is string && isValidId(data.restaurantId) &&
+        data.sellerUid is string && data.sellerUid.size() >= 1 && data.sellerUid.size() <= 128 &&
+        data.restaurantName is string && data.restaurantName.size() >= 2 && data.restaurantName.size() <= 120 &&
+        data.items is list && data.items.size() >= 1 && data.items.size() <= 50 &&
+        data.items[0] is map &&
+        data.itemTotalInr is int && data.itemTotalInr >= 1 && data.itemTotalInr <= 500000 &&
+        data.deliveryFeeInr is int && data.deliveryFeeInr >= 0 && data.deliveryFeeInr <= 1000 &&
+        data.gstAndPackagingInr is int && data.gstAndPackagingInr >= 0 && data.gstAndPackagingInr <= 50000 &&
+        data.grandTotalInr is int && data.grandTotalInr == (data.itemTotalInr + data.deliveryFeeInr + data.gstAndPackagingInr) &&
+        isValidAddress(data.deliveryAddress) &&
+        data.paymentMethod == 'Cash on Delivery (COD)' &&
+        isValidOrderStatus(data.status) &&
+        data.etaText is string && data.etaText.size() >= 1 && data.etaText.size() <= 120;
+    }
+
+    // --- 1. Restaurants (Public Catalog Read, Seller-Owned Write) ---
+    match /restaurants/{restaurantId} {
+      allow get, list: if true;
+
+      allow create: if isSignedIn() &&
+        isValidId(restaurantId) &&
+        incoming().sellerUid == request.auth.uid &&
+        incoming().keys().hasAll([
+          'sellerUid', 'name', 'locality', 'subRegion', 'deliveryZoneIds',
+          'cuisines', 'rating', 'reviewCountText', 'deliveryTimeMins',
+          'deliveryFeeInr', 'priceForOneInr', 'isPureVeg', 'isRecommended',
+          'isActive', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'sellerUid', 'name', 'locality', 'subRegion', 'deliveryZoneIds',
+          'cuisines', 'rating', 'reviewCountText', 'deliveryTimeMins',
+          'deliveryFeeInr', 'priceForOneInr', 'isPureVeg', 'offerText',
+          'isRecommended', 'imageUrl', 'localImageKey', 'isActive',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidTimestamp(incoming().createdAt) &&
+        isValidTimestamp(incoming().updatedAt) &&
+        isValidRestaurant(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(restaurantId) &&
+        isValidRestaurant(incoming()) &&
+        existing().sellerUid == request.auth.uid &&
+        incoming().sellerUid == existing().sellerUid &&
+        incoming().createdAt == existing().createdAt &&
+        isValidTimestamp(incoming().updatedAt) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'locality', 'subRegion', 'deliveryZoneIds', 'cuisines',
+          'rating', 'reviewCountText', 'deliveryTimeMins', 'deliveryFeeInr',
+          'priceForOneInr', 'isPureVeg', 'offerText', 'isRecommended',
+          'imageUrl', 'localImageKey', 'isActive', 'updatedAt'
+        ]);
+
+      allow delete: if isSignedIn() &&
+        isValidId(restaurantId) &&
+        existing().sellerUid == request.auth.uid;
+    }
+
+    // --- 2. Dishes (Public Catalog Read, Verified Parent-Restaurant Seller Write) ---
+    match /dishes/{dishId} {
+      allow get, list: if true;
+
+      allow create: if isSignedIn() &&
+        isValidId(dishId) &&
+        incoming().sellerUid == request.auth.uid &&
+        incoming().keys().hasAll([
+          'restaurantId', 'sellerUid', 'name', 'categoryId', 'priceInr',
+          'isVeg', 'isBestseller', 'spiceLevel', 'rating', 'ratingCount',
+          'shortDescription', 'description', 'whatYouWillGet', 'serves',
+          'prepTimeMins', 'isAvailable', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'restaurantId', 'sellerUid', 'name', 'categoryId', 'priceInr',
+          'originalPriceInr', 'isVeg', 'isBestseller', 'spiceLevel', 'rating',
+          'ratingCount', 'shortDescription', 'description', 'whatYouWillGet',
+          'serves', 'prepTimeMins', 'imageUrl', 'localImageKey', 'isAvailable',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidTimestamp(incoming().createdAt) &&
+        isValidTimestamp(incoming().updatedAt) &&
+        isValidDish(incoming()) &&
+        exists(/databases/$(database)/documents/restaurants/$(incoming().restaurantId)) &&
+        get(/databases/$(database)/documents/restaurants/$(incoming().restaurantId)).data.sellerUid == request.auth.uid;
+
+      allow update: if isSignedIn() &&
+        isValidId(dishId) &&
+        isValidDish(incoming()) &&
+        existing().sellerUid == request.auth.uid &&
+        incoming().sellerUid == existing().sellerUid &&
+        incoming().restaurantId == existing().restaurantId &&
+        incoming().createdAt == existing().createdAt &&
+        isValidTimestamp(incoming().updatedAt) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'categoryId', 'priceInr', 'originalPriceInr', 'isVeg',
+          'isBestseller', 'spiceLevel', 'rating', 'ratingCount',
+          'shortDescription', 'description', 'whatYouWillGet', 'serves',
+          'prepTimeMins', 'imageUrl', 'localImageKey', 'isAvailable', 'updatedAt'
+        ]);
+
+      allow delete: if isSignedIn() &&
+        isValidId(dishId) &&
+        existing().sellerUid == request.auth.uid;
+    }
+
+    // --- 3. Customers (Private PII Isolated Per UID) ---
+    match /customers/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && request.auth.uid == uid;
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+        isValidId(uid) &&
+        request.auth.uid == uid &&
+        incoming().uid == uid &&
+        incoming().keys().hasAll(['uid', 'fullName', 'email', 'phone', 'address', 'createdAt', 'updatedAt']) &&
+        incoming().keys().hasOnly(['uid', 'fullName', 'email', 'phone', 'address', 'createdAt', 'updatedAt']) &&
+        isValidTimestamp(incoming().createdAt) &&
+        isValidTimestamp(incoming().updatedAt) &&
+        isValidCustomerProfile(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(uid) &&
+        request.auth.uid == uid &&
+        isValidCustomerProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        isValidTimestamp(incoming().updatedAt) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'email', 'phone', 'address', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(uid) && request.auth.uid == uid;
+    }
+
+    // --- 4. Sellers (Private Seller Profile Isolated Per UID) ---
+    match /sellers/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && request.auth.uid == uid;
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+        isValidId(uid) &&
+        request.auth.uid == uid &&
+        incoming().uid == uid &&
+        incoming().keys().hasAll(['uid', 'ownerName', 'email', 'phone', 'restaurantId', 'restaurantName', 'createdAt', 'updatedAt']) &&
+        incoming().keys().hasOnly(['uid', 'ownerName', 'email', 'phone', 'restaurantId', 'restaurantName', 'createdAt', 'updatedAt']) &&
+        isValidTimestamp(incoming().createdAt) &&
+        isValidTimestamp(incoming().updatedAt) &&
+        isValidSellerProfile(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(uid) &&
+        request.auth.uid == uid &&
+        isValidSellerProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().restaurantId == existing().restaurantId &&
+        incoming().createdAt == existing().createdAt &&
+        isValidTimestamp(incoming().updatedAt) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['ownerName', 'email', 'phone', 'restaurantName', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(uid) && request.auth.uid == uid;
+    }
+
+    // --- 5. Orders (Customer <-> Seller Isolated Sync) ---
+    match /orders/{orderId} {
+      allow get, list: if isSignedIn() && (
+        existing().customerUid == request.auth.uid ||
+        existing().sellerUid == request.auth.uid
+      );
+
+      allow create: if isSignedIn() &&
+        isValidId(orderId) &&
+        incoming().customerUid == request.auth.uid &&
+        incoming().status == 'PLACED' &&
+        incoming().keys().hasAll([
+          'customerUid', 'restaurantId', 'sellerUid', 'restaurantName', 'items',
+          'itemTotalInr', 'deliveryFeeInr', 'gstAndPackagingInr', 'grandTotalInr',
+          'deliveryAddress', 'paymentMethod', 'status', 'etaText', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'customerUid', 'restaurantId', 'sellerUid', 'restaurantName', 'items',
+          'itemTotalInr', 'deliveryFeeInr', 'gstAndPackagingInr', 'grandTotalInr',
+          'deliveryAddress', 'paymentMethod', 'status', 'etaText', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidTimestamp(incoming().createdAt) &&
+        isValidTimestamp(incoming().updatedAt) &&
+        isValidOrder(incoming()) &&
+        exists(/databases/$(database)/documents/restaurants/$(incoming().restaurantId)) &&
+        get(/databases/$(database)/documents/restaurants/$(incoming().restaurantId)).data.sellerUid == incoming().sellerUid;
+
+      allow update: if isSignedIn() &&
+        isValidId(orderId) &&
+        isValidOrder(incoming()) &&
+        incoming().customerUid == existing().customerUid &&
+        incoming().restaurantId == existing().restaurantId &&
+        incoming().sellerUid == existing().sellerUid &&
+        incoming().createdAt == existing().createdAt &&
+        isValidTimestamp(incoming().updatedAt) &&
+        existing().status != 'DELIVERED' &&
+        existing().status != 'CANCELLED' &&
+        (
+          (
+            existing().sellerUid == request.auth.uid &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'etaText', 'updatedAt'])
+          ) ||
+          (
+            existing().customerUid == request.auth.uid &&
+            existing().status == 'PLACED' &&
+            incoming().status == 'CANCELLED' &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+          )
+        );
+
+      allow delete: if false;
+    }
+  }
+}

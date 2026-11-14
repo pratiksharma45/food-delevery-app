@@ -1,0 +1,154 @@
+{
+  "entities": {
+    "Restaurant": {
+      "title": "Restaurant",
+      "description": "A Delhi NCR restaurant storefront owned by an authenticated seller.",
+      "type": "object",
+      "properties": {
+        "sellerUid": { "type": "string", "description": "Firebase Auth UID of the restaurant owner" },
+        "name": { "type": "string", "description": "Display name of the restaurant" },
+        "locality": { "type": "string", "description": "Primary Delhi NCR locality" },
+        "subRegion": { "type": "string", "description": "Delhi NCR sub-region" },
+        "deliveryZoneIds": { "type": "array", "description": "List of Delhi NCR zone IDs served" },
+        "cuisines": { "type": "array", "description": "List of cuisines served" },
+        "rating": { "type": "number", "description": "Average customer rating (0 to 5)" },
+        "reviewCountText": { "type": "string", "description": "Formatted review count" },
+        "deliveryTimeMins": { "type": "integer", "description": "Estimated delivery time in minutes" },
+        "deliveryFeeInr": { "type": "integer", "description": "Delivery fee in INR" },
+        "priceForOneInr": { "type": "integer", "description": "Average price for one person in INR" },
+        "isPureVeg": { "type": "boolean", "description": "Whether the restaurant serves pure vegetarian food only" },
+        "offerText": { "type": "string", "description": "Optional promotional offer label" },
+        "isRecommended": { "type": "boolean", "description": "Whether highlighted as recommended" },
+        "imageUrl": { "type": "string", "description": "Remote image URL or compressed JPEG data URI" },
+        "localImageKey": { "type": "string", "description": "Optional fallback bundled drawable key" },
+        "isActive": { "type": "boolean", "description": "Whether restaurant is currently accepting orders" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": [
+        "sellerUid", "name", "locality", "subRegion", "deliveryZoneIds",
+        "cuisines", "rating", "reviewCountText", "deliveryTimeMins",
+        "deliveryFeeInr", "priceForOneInr", "isPureVeg", "isRecommended",
+        "isActive", "createdAt", "updatedAt"
+      ]
+    },
+    "Dish": {
+      "title": "Dish",
+      "description": "A menu item belonging to a specific restaurant and seller.",
+      "type": "object",
+      "properties": {
+        "restaurantId": { "type": "string", "description": "ID of the parent restaurant document" },
+        "sellerUid": { "type": "string", "description": "UID of the seller owning the parent restaurant" },
+        "name": { "type": "string", "description": "Dish title" },
+        "categoryId": { "type": "string", "description": "Food category ID (e.g. biryani, thali, chaat)" },
+        "priceInr": { "type": "integer", "description": "Selling price in INR" },
+        "originalPriceInr": { "type": "integer", "description": "Optional original MRP in INR" },
+        "isVeg": { "type": "boolean", "description": "Vegetarian indicator" },
+        "isBestseller": { "type": "boolean", "description": "Bestseller badge flag" },
+        "spiceLevel": { "type": "string", "description": "Spice level label" },
+        "rating": { "type": "number", "description": "Dish rating (0 to 5)" },
+        "ratingCount": { "type": "integer", "description": "Number of dish ratings" },
+        "shortDescription": { "type": "string", "description": "One-line summary" },
+        "description": { "type": "string", "description": "Detailed dish description" },
+        "whatYouWillGet": { "type": "array", "description": "Itemized contents included in the dish pack" },
+        "serves": { "type": "string", "description": "How many people it serves" },
+        "prepTimeMins": { "type": "integer", "description": "Preparation time in minutes" },
+        "imageUrl": { "type": "string", "description": "Remote image URL or compressed JPEG data URI" },
+        "localImageKey": { "type": "string", "description": "Optional fallback bundled drawable key" },
+        "isAvailable": { "type": "boolean", "description": "Whether dish is currently available" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": [
+        "restaurantId", "sellerUid", "name", "categoryId", "priceInr",
+        "isVeg", "isBestseller", "spiceLevel", "rating", "ratingCount",
+        "shortDescription", "description", "whatYouWillGet", "serves",
+        "prepTimeMins", "isAvailable", "createdAt", "updatedAt"
+      ]
+    },
+    "CustomerProfile": {
+      "title": "CustomerProfile",
+      "description": "Private customer profile and saved Delhi NCR delivery address.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "fullName": { "type": "string", "description": "Customer full name" },
+        "email": { "type": "string", "description": "Customer email address" },
+        "phone": { "type": "string", "description": "10-digit Indian phone number" },
+        "address": { "type": "object", "description": "Saved delivery address map" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": ["uid", "fullName", "email", "phone", "address", "createdAt", "updatedAt"]
+    },
+    "SellerProfile": {
+      "title": "SellerProfile",
+      "description": "Private seller profile linking seller UID to their restaurant.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID of seller" },
+        "ownerName": { "type": "string", "description": "Seller full name" },
+        "email": { "type": "string", "description": "Seller email ID" },
+        "phone": { "type": "string", "description": "Seller phone number" },
+        "restaurantId": { "type": "string", "description": "Associated restaurant document ID" },
+        "restaurantName": { "type": "string", "description": "Associated restaurant display name" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": ["uid", "ownerName", "email", "phone", "restaurantId", "restaurantName", "createdAt", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer Cash on Delivery order routed to the restaurant seller.",
+      "type": "object",
+      "properties": {
+        "customerUid": { "type": "string", "description": "Customer Firebase Auth UID" },
+        "restaurantId": { "type": "string", "description": "Target restaurant document ID" },
+        "sellerUid": { "type": "string", "description": "Owner UID of the target restaurant" },
+        "restaurantName": { "type": "string", "description": "Restaurant display name" },
+        "items": { "type": "array", "description": "Ordered dish line items" },
+        "itemTotalInr": { "type": "integer", "description": "Subtotal in INR" },
+        "deliveryFeeInr": { "type": "integer", "description": "Delivery fee in INR" },
+        "gstAndPackagingInr": { "type": "integer", "description": "Packaging & GST in INR" },
+        "grandTotalInr": { "type": "integer", "description": "Total payable COD amount in INR" },
+        "deliveryAddress": { "type": "object", "description": "Delivery address map" },
+        "paymentMethod": { "type": "string", "description": "Cash on Delivery (COD)" },
+        "status": {
+          "type": "string",
+          "enum": ["PLACED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"],
+          "description": "Order fulfillment status"
+        },
+        "etaText": { "type": "string", "description": "Estimated delivery window text" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": [
+        "customerUid", "restaurantId", "sellerUid", "restaurantName", "items",
+        "itemTotalInr", "deliveryFeeInr", "gstAndPackagingInr", "grandTotalInr",
+        "deliveryAddress", "paymentMethod", "status", "etaText", "createdAt", "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/restaurants/{restaurantId}": {
+      "schema": { "$ref": "#/entities/Restaurant" },
+      "description": "Publicly browsable Delhi NCR restaurants writable only by their owning seller."
+    },
+    "/dishes/{dishId}": {
+      "schema": { "$ref": "#/entities/Dish" },
+      "description": "Publicly browsable dishes writable only by the owning restaurant seller."
+    },
+    "/customers/{uid}": {
+      "schema": { "$ref": "#/entities/CustomerProfile" },
+      "description": "Private customer profile and delivery address isolated to uid."
+    },
+    "/sellers/{uid}": {
+      "schema": { "$ref": "#/entities/SellerProfile" },
+      "description": "Private seller profile isolated to uid."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer COD orders accessible only to the customer who placed them and the restaurant seller."
+    }
+  }
+}
